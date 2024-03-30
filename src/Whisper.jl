@@ -4,7 +4,7 @@ using DataDeps
 
 include("LibWhisper.jl")
 using Whisper.LibWhisper
-
+using Suppressor
 include("models.jl")
 
 export transcribe
@@ -24,11 +24,13 @@ automatically downloaded from HuggingFace on first use.
 - `data`: `Vector{Float32}` containing 16kHz sampled audio
 """
 function transcribe(model, data)
-    ctx = whisper_init_from_file(DataDeps.resolve("whisper-ggml-$model/ggml-$model.bin", "__FILE__") )
-    wparams = whisper_full_default_params(LibWhisper.WHISPER_SAMPLING_GREEDY)
-
-    ret = whisper_full_parallel(ctx, wparams, data, length(data), 1)
-
+    local ctx, ret
+    @suppress begin
+        ctx = whisper_init_from_file(model)
+        # ctx = whisper_init_from_file(DataDeps.resolve("whisper-ggml-$model/ggml-$model.bin", "__FILE__") )
+        wparams = whisper_full_default_params(LibWhisper.WHISPER_SAMPLING_GREEDY)
+        ret = whisper_full_parallel(ctx, wparams, data, length(data), 1)
+    end
     if ret != 0
         error("Error running whisper model: $ret")
     end
