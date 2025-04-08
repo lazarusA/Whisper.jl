@@ -39,6 +39,7 @@ function transcribe(model, data)
 
     result = ""
     for i in 0:(n_segments - 1)
+        yield()
         txt = whisper_full_get_segment_text(ctx, i)
         result = result * unsafe_string(txt)
         t0 = whisper_full_get_segment_t0(ctx, i)
