@@ -11,22 +11,11 @@ audio signal. It takes as input the model name, and a float32 array with the sou
 The signal is expected to be sampled at 16kHz. 
 
 ```julia
-using Whisper, LibSndFile, FileIO, SampledSignals
+using Whisper, LibSndFile, FileIO
 
-s = load("/path/to/audio_file.ogg")  
+_sdata = load("/path/to/audio_file.ogg")
 
-# Whisper expects 16kHz sample rate and Float32 data
-sout = SampleBuf(Float32, 16000, round(Int, length(s)*(16000/samplerate(s))), nchannels(s))  
-write(SampleBufSink(sout), SampleBufSource(s))  # Resample
-
-if nchannels(sout) == 1
-    data  = sout.data
-elseif nchannels(sout) == 2
-    sd = sout.data
-    data = [sd[i,1] + sd[i,2] for i in 1:size(sd)[1]] #convert stereo to mono
-end
-
-result = transcribe("base.en", data)
+result = transcribe("base.en", _sdata)
 ```
 
 For more control, the [whisper.cpp C interface](https://github.com/ggerganov/whisper.cpp/blob/master/whisper.h) is available within the [`Whisper.LibWhisper` module](https://github.com/aviks/Whisper.jl/blob/main/src/LibWhisper.jl). 
